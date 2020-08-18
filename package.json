@@ -25,5 +25,8 @@
   "homepage": "https://github.com/koalatiapp/tool-spellcheck#readme",
   "devDependencies": {
     "@koalati/dev-tool-tester": "^1.0.6"
+  },
+  "dependencies": {
+    "languagedetect": "^2.0.0"
   }
 }

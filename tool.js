@@ -1,5 +1,7 @@
 'use strict';
 
+const LanguageDetect = require('languagedetect');
+
 class Tool {
     constructor({ page, devices }) {
         this.page = page;
@@ -7,7 +9,13 @@ class Tool {
 
     async run() {
         this._contentText = await this._extractContent();
-        console.log(this._contentText);
+        const lang = this._detectLanguage();
+
+        if (!lang) {
+            throw new Error("The language of the content could not be identified.");
+        }
+
+
     }
 
     get results() {
@@ -65,6 +73,21 @@ class Tool {
 
             return content;
         });
+    }
+
+    _detectLanguage() {
+        const langDetector = new LanguageDetect();
+        langDetector.setLanguageType('iso2');
+
+        let detectedLanguages = langDetector.detect(this._contentText);
+
+        for (const result of detectLanguages) {
+            if (result[0] && result[0] != 'la') {
+                return result[0];
+            }
+        }
+
+        return null;
     }
 }
 
