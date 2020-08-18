@@ -6,7 +6,8 @@ class Tool {
     }
 
     async run() {
-
+        this._contentText = await this._extractContent();
+        console.log(this._contentText);
     }
 
     get results() {
@@ -27,6 +28,43 @@ class Tool {
 
     async cleanup() {
 
+    }
+
+    async _extractContent() {
+        return await this.page.evaluate(() => {
+            // we'll be doing some manipulation on the nodes, so we keep it non-destructive
+            const pageNode = document.body.cloneNode(true);
+
+            // get rid of unwanted elements for copy text
+            for (const unwantedNode of pageNode.querySelectorAll('script, style, noscript, code')) {
+                unwantedNode.remove();
+            }
+
+            // prevent <br> from causing stuck-together words
+            for (const brNode of pageNode.querySelectorAll('br')) {
+                brNode.outerHTML = " ";
+            }
+
+            // flex childs are rarely words forming a sentence: break them apart
+            for (const node of pageNode.querySelectorAll('*')) {
+                if (window.getComputedStyle(node).display.toLowerCase().indexOf('flex') != -1) {
+                    for (const child of node.children) {
+                        child.outerHTML = "\n\n" + child.outerHTML;
+                    }
+                }
+            }
+
+            // simple fix for minified HTML
+            pageNode.innerHTML = pageNode.innerHTML.replace(/></g, '> <');
+
+            // home stretch...
+            const content = (pageNode.innerText || '')
+                .replace(/(\s{2,})([A-Z0-9])/g, '$1\n$2') // split blocks that seem to contain multiple sentences or standalone blocks
+                .replace(/\s{3,}/g, '\n') // break everything into single line blocks
+                .replace(/\n.{1,3}\n/g, '\n'); // remove tiny words or tokens that are on their own
+
+            return content;
+        });
     }
 }
 
