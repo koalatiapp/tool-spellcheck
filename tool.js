@@ -1,6 +1,8 @@
 'use strict';
 
+const extractDomContent = require('extract-dom-content');
 const LanguageDetect = require('languagedetect');
+const axios = require('axios');
 
 class Tool {
     constructor({ page, devices }) {
@@ -15,7 +17,8 @@ class Tool {
             throw new Error("The language of the content could not be identified.");
         }
 
-        console.log(this._contentText);
+        const response = await this._spellcheck(lang);
+        console.log(response);
     }
 
     get results() {
@@ -39,66 +42,12 @@ class Tool {
     }
 
     async _extractContent() {
+        await this.page.addScriptTag({ content: `${extractDomContent}`});
         return await this.page.evaluate(() => {
-            const pageNode = document.body.cloneNode(true);
-            const originalNodes = document.body.querySelectorAll('*');
-            const clonedNodes = pageNode.querySelectorAll('*');
-
-            // Apply computed styles as inline CSS for every node, as window.getComputedStyle isn't available outside the DOM
-            for (let i = 0; i < originalNodes.length; i++) {
-                clonedNodes[i].setAttribute('style', window.getComputedStyle(originalNodes[i]).cssText);
-            }
-
-            // Get rid of unwanted elements for copy text
-            for (const unwantedNode of pageNode.querySelectorAll('script, style, noscript, code')) {
-                unwantedNode.remove();
-            }
-
-            // Prevent <br> from causing stuck-together words
-            for (const brNode of pageNode.querySelectorAll('br')) {
-                brNode.outerHTML = brNode.nextSibling && brNode.nextSibling.nodeValue && brNode.nextSibling.nodeValue.trim().length ? ' ' : '\n';
-            }
-
-            // Replace images with their alt text if they have one
-            for (const imgNode of pageNode.querySelectorAll('img[alt]:not([alt=""])')) {
-                imgNode.outerHTML = '\n' + imgNode.alt + '\n';
-            }
-
-            // Flex, block or grid display links with that only contain text can most likely be on their own line
-            for (const linkNode of pageNode.querySelectorAll('a')) {
-                const display = linkNode.style.display.toLowerCase();
-                if (display == 'block' || display.indexOf('flex') != -1 || display.indexOf('grid') != -1) {
-                    if (![...linkNode.childNodes].filter((node) => { return node.nodeName != '#text'; }).length) {
-                        linkNode.innerHTML = "\n\n" + linkNode.innerHTML;
-                    }
-                }
-            }
-
-            // Flex childs are rarely words forming a sentence: break them apart
-            for (const node of pageNode.querySelectorAll('*')) {
-                if (node.style.display.toLowerCase().indexOf('flex') != -1) {
-                    for (const child of node.children) {
-                        child.innerHTML = "\n\n" + child.innerHTML;
-                    }
-                }
-            }
-
-            // Simple fix for minified HTML
-            pageNode.innerHTML = pageNode.innerHTML.replace(/></g, '> <');
-
-            // Make sure headings are on their own lines - they should be "self-sufficient"
-            pageNode.innerHTML = pageNode.innerHTML.replace(/<h([1-6])(.+?)<\/h\1>/g, '\n<h$1$2</h1>\n');
-
-            // Home stretch...
-            const rawContent = (pageNode.innerText || '')
-                .replace(/(\s{2,})([A-Z0-9])/g, '$1\n$2') // split blocks that seem to contain multiple sentences or standalone blocks
-                .replace(/\s{3,}/g, '\n') // break everything into single line blocks
-                .replace(/\n.{1,3}\n/g, '\n') // remove tiny words or tokens that are on their own
-                .replace(/ {2,}/g, ' ') // replace multiple spaces by a single one
-                .replace(/^\s(.+)$/gm, '$1'); // remove spaces at the beginning of lines
-
-            // Get an array of strings without duplicates via the Set constructor and spread operator
-            let contentStrings = [...new Set(rawContent.split('\n'))];
+            let contentStrings = extractDomContent(document.body, {
+                returnAsArray: true,
+                removeDuplicates: true,
+            });
 
             // Filter out strings that aren't really adequate for spellchecking
             contentStrings = contentStrings.filter((string) => {
@@ -128,9 +77,27 @@ class Tool {
         return null;
     }
 
-    async _processText() {
-        const apiUrl = process.env.LANGUAGETOOL_API_URL || 'https://languagetool.org/api/v2/check';
+    _spellcheck(lang) {
+        const apiHost = process.env.LANGUAGETOOL_API_HOST || 'http://languagetool.org';
+        const apiPath = process.env.LANGUAGETOOL_API_PATH || '/api/v2/check';
         const apiPort = process.env.LANGUAGETOOL_API_PORT || 80;
+
+        return new Promise((resolve, reject) => {
+            axios.get(`${apiHost}:${apiPort}${apiPath}`, {
+                params: {
+                    language: lang,
+                    text: this._contentText,
+                }
+            }).then(response => {
+                resolve(typeof response.data == 'string' ? JSON.parse(response.data) : response.data);
+            }).catch(error => {
+                if (error.response && typeof error.response.data == 'string' && error.response.data.indexOf('Error: ') === 0) {
+                    reject('Spellchecking request error: ' + error.response.data.substr(7));
+                }
+
+                reject('Could not connect to the spellchecking server: ' + error);
+            });
+        });
     }
 }
 

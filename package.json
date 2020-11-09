@@ -27,6 +27,8 @@
     "@koalati/dev-tool-tester": "^1.0.6"
   },
   "dependencies": {
+    "axios": "^0.21.0",
+    "extract-dom-content": "^1.0.0",
     "languagedetect": "^2.0.0"
   }
 }
