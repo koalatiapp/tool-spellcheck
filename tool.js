@@ -3,6 +3,7 @@
 const extractDomContent = require('extract-dom-content');
 const LanguageDetect = require('languagedetect');
 const axios = require('axios');
+const escapeMarkdown = require('markdown-escape')
 
 class Tool {
     constructor({ page, devices }) {
@@ -17,23 +18,20 @@ class Tool {
             throw new Error("The language of the content could not be identified.");
         }
 
-        const response = await this._spellcheck(lang);
-        console.log(response);
+        this._languageToolResponse = await this._spellcheck(lang);
+        this._prepareResults();
     }
 
     get results() {
         return [
             {
-                'uniqueName': 'your_test_unique_name', // a test name that is unique within your tool. this will be prefixed with your tool's name to generate a Koalati-wide unique name for this test.
-                'title': 'Your test\'s user-friendly title',
-                'description': 'Your test\'s user-friendly description.', // This can be a static description of what your test looks for, or a dynamic one that describes the results.
-                'weight': 1, // the weight of this test's score as a float. the sum of the weights of all your results should be 1.0
-                'score': 1, // the score obtained as a float: 0.5 is 50%, 1.0 is 100%, etc.
-                // 'snippets': [], // a one-dimensional array of strings and/or ElementHandle that can be represented as code snippets in Koalati's results
-                // 'table': [], // a two-dimensional array of data that will be represented as a table in Koalati's results. The first row should contain the column's headings.
-                // 'recommendations': '', // a string or an array of string that gives recommendations, telling the user what can be done to improve the page
-            },
-            // ...
+                'uniqueName': 'spellcheck',
+                'title': 'Content spellcheck',
+                'description': 'Checks if your page\'s content contains spelling mistakes, grammar errors, redundancies, and any other mistakes.',
+                'weight': 1,
+                'score': this._score,
+                'recommendations': this._recommandations,
+            }
         ];
     }
 
@@ -98,6 +96,37 @@ class Tool {
                 reject('Could not connect to the spellchecking server: ' + error);
             });
         });
+    }
+
+    _prepareResults() {
+        let affectedCharacterCount = 0;
+        const originalCharacterCount = this._contentText.length;
+        this._recommandations = [];
+
+        for (const result of this._languageToolResponse.matches || []) {
+            this._recommandations.push(this._extractRecommandation(result));
+            affectedCharacterCount += result.length;
+        }
+
+        if (affectedCharacterCount > originalCharacterCount) {
+            this._score = 0;
+        } else {
+            this._score = 1 - (affectedCharacterCount / originalCharacterCount);
+        }
+    }
+
+    _extractRecommandation(result) {
+        // @TODD: Switch to using the recommandation template when it is implemented
+        //    - Use `result.rule.id` as unique name
+        //    - Use `result.message` with added placecholders as a template
+        //    - Use `result.replacements[0]` and `result.sentence` as arguments (with markdown emphasis using `result.offset` and `result.length`)
+
+        let context = escapeMarkdown(result.context.text.substr(0, result.context.offset)) +
+            '**' + escapeMarkdown(result.context.text.substr(result.context.offset, result.context.length)) + '**' +
+            escapeMarkdown(result.context.text.substr(result.context.offset + result.context.length));
+        let recommandation = `${result.message}: \n>${context.replace(/\\n/g, '\n>')}`;
+
+        return recommandation;
     }
 }
 
