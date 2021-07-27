@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/koalatiapp/tool-spellcheck#readme",
   "devDependencies": {
-    "@koalati/dev-tool-tester": "^1.0.6"
+    "@koalati/dev-tool-tester": "^2.0.3"
   },
   "dependencies": {
     "axios": "^0.21.0",
