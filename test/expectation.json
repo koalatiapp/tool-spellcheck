@@ -1,0 +1,52 @@
+[
+	{
+		"uniqueName": "CASING",
+		"title": "Capitalization",
+		"description": "Checks if your page's content contains spelling mistakes, grammar errors, redundancies, and any other mistakes.\n\n- Only proper nouns start with an uppercase character (there are exceptions for headlines).",
+		"weight": 1,
+		"score": 0,
+		"recommendations": [
+			[
+				"Fix the capitalization issues in your website's content",
+				{},
+				"ESSENTIAL"
+			]
+		],
+		"snippets": [],
+		"table": [
+			[
+				"Original text",
+				"Suggested text"
+			],
+			[
+				"...me About us Products Pricing Contact us **Sign** up Our company is amazing Welcome to ou...",
+				"...me About us Products Pricing Contact us **sign** up Our company is amazing Welcome to ou..."
+			]
+		]
+	},
+	{
+		"uniqueName": "REDUNDANCY",
+		"title": "Redundant Phrases",
+		"description": "Checks if your page's content contains spelling mistakes, grammar errors, redundancies, and any other mistakes.\n\n- Consider using “all the”.",
+		"weight": 1,
+		"score": 0,
+		"recommendations": [
+			[
+				"Fix the redundant phrases issues in your website's content",
+				{},
+				"OPTIMIZATION"
+			]
+		],
+		"snippets": [],
+		"table": [
+			[
+				"Original text",
+				"Suggested text"
+			],
+			[
+				"...mpany's website. On here, you will find **all of the** latest and coolest tech gadgets the 198...",
+				"...mpany's website. On here, you will find **all the** latest and coolest tech gadgets the 198..."
+			]
+		]
+	}
+]

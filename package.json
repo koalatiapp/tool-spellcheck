@@ -1,17 +1,19 @@
 {
   "name": "@koalati/tool-spellcheck",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Koalati tool that checks a web page's content for grammar and spelling issues.",
   "main": "tool.js",
   "scripts": {
-    "test": "npx @koalati/dev-tool-tester --url=\"https://koalati.com/\""
+    "test": "mocha --config=test/mocharc.json",
+    "debug": "npx @koalati/dev-tool-tester --url=\"https://koalati.com/\""
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/koalatiapp/tool-spellcheck.git"
   },
   "keywords": [
-    "koalati"
+    "koalati",
+    "koalati-tool"
   ],
   "author": {
     "name": "Koalati",
@@ -24,9 +26,12 @@
   },
   "homepage": "https://github.com/koalatiapp/tool-spellcheck#readme",
   "devDependencies": {
-    "@koalati/dev-tool-tester": "^2.0.3"
+    "@koalati/dev-tool-tester": "^2.0.3",
+    "eslint": "^7.18.0",
+    "mocha": "^8.2.1"
   },
   "dependencies": {
+    "@koalati/result-builder": "^1.4.0",
     "axios": "^0.21.0",
     "extract-dom-content": "^1.0.0",
     "languagedetect": "^2.0.0",
