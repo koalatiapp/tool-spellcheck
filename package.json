@@ -1,6 +1,6 @@
 {
   "name": "@koalati/tool-spellcheck",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Koalati tool that checks a web page's content for grammar and spelling issues.",
   "main": "tool.js",
   "scripts": {
