@@ -149,16 +149,21 @@ class Tool {
 	}
 
 	_higlightContext(result) {
+		const context = result.context.text.substr(result.context.offset, result.context.length);
+		const whitespaceBefore = context.replace(/^(\s*).*$/, "$1");
+		const whitespaceAfter = context.replace(/^.*?(\s*)$/, "$1");
+
 		return escapeMarkdown(result.context.text.substr(0, result.context.offset)) +
-            "**" + escapeMarkdown(result.context.text.substr(result.context.offset, result.context.length)) + "**" +
+			whitespaceBefore + "**" + escapeMarkdown(context.trim()) + "**" + whitespaceAfter +
             escapeMarkdown(result.context.text.substr(result.context.offset + result.context.length));
 	}
 
 	_extractSuggestedText(result) {
 		try {
 			const original = result.context.text;
+			const suggestion = result.replacements[0].value;
 			const replacement = escapeMarkdown(original.substr(0, result.context.offset)) +
-				"**" + escapeMarkdown(result.replacements[0].value) + "**" +
+				(suggestion ? ("**" + escapeMarkdown(suggestion) + "**") : "") +
 				escapeMarkdown(original.substr(result.context.offset + result.context.length));
 
 			return replacement;

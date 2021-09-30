@@ -48,5 +48,30 @@
 				"...mpany's website. On here, you will find **all the** latest and coolest tech gadgets the 198..."
 			]
 		]
+	},
+	{
+		"description": "Checks if your page's content contains spelling mistakes, grammar errors, redundancies, and any other mistakes.\n\n- Put a space after the comma, but not before the comma.",
+		"recommendations": [
+			[
+				"Fix the typography issues in your website's content",
+				{},
+				"OPTIMIZATION"
+			]
+		],
+		"score": 0,
+		"snippets": [],
+		"table": [
+			[
+				"Original text",
+				"Suggested text"
+			],
+		    [
+				"...nd, see if you find anything of interest **,** and make sure to contact us if you do! ...",
+				"...nd, see if you find anything of interest**,** and make sure to contact us if you do! ..."
+			]
+		],
+		"title": "Typography",
+		"uniqueName": "TYPOGRAPHY",
+		"weight": 1
 	}
 ]
