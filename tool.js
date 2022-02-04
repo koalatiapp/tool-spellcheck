@@ -99,7 +99,8 @@ class Tool {
 		const testDescriptions = [];
 
 		for (const result of this._languageToolResponse.matches || []) {
-			if (this._detectMissingCommaFalseNegative(result)) {
+			if (this._detectMissingCommaFalseNegative(result) ||
+				this._incorrectWordIsProperNoun(result)) {
 				continue;
 			}
 
@@ -191,6 +192,22 @@ class Tool {
 		const stringAfter = this._contentText.substr(result.offset + result.length).replace(/^[\t\r ]+(.*)$/gm, "$1");
 
 		return stringAfter.indexOf("\n") == 0 || stringBefore.indexOf("\n") == stringBefore.length - 1;
+	}
+
+	/**
+	 * Detects whether the subject of a result looks like a proper noun.
+	 *
+	 * @param {object} result
+	 * @param {object} result.rule
+	 * @param {string} result.rule.id
+	 * @param {integer} result.offset
+	 * @param {integer} result.length
+	 * @returns {boolean} Returns true if the subject is a proper noun
+	 */
+	_incorrectWordIsProperNoun(result) {
+		const subject = this._contentText.substr(0, result.offset);
+
+		return /^([A-Z\u00C0-\u00DC]+[^\s]+\s*)+$/.test(subject);
 	}
 }
 
