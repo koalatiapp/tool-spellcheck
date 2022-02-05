@@ -205,9 +205,9 @@ class Tool {
 	 * @returns {boolean} Returns true if the subject is a proper noun
 	 */
 	_incorrectWordIsProperNoun(result) {
-		const subject = this._contentText.substr(0, result.offset);
+		const subject = this._contentText.substr(result.offset, result.length);
 
-		return /^([A-Z\u00C0-\u00DC]+[^\s]+\s*)+$/.test(subject);
+		return /^([A-Z\u00C0-\u00DC]+[^\s]+\s*)+$/.test(subject) && result.rule.category.id != "CASING";
 	}
 }
 
